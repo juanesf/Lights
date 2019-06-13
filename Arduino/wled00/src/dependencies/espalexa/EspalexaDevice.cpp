@@ -127,7 +127,7 @@ uint8_t EspalexaDevice::getLastValue()
 
 void EspalexaDevice::setPropertyChanged(uint8_t p)
 {
-  //0: initial 1: on 2: off 3: bri 4: col 5: ct
+  //0:initial 1:on 2:off 3:bri 4:col 5:ct
   _changed = p;
 }
 

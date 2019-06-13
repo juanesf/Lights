@@ -270,10 +270,10 @@ Hue Bridge IP:<br>
 <b>Press the pushlink button on the bridge, after that save this page!</b><br>
 (when first connecting)<br>
 Hue status: <span class="hms"> Internal ESP Error! </span><hr>
-<button type="button" onclick="B()">Back</button><button type="submit">Save</button>
 <h3>diyHue Setup</h3>
-Virtual Lights to Emulate: <input name="DC" type="number" min="1" max="200" required><br>
-Transitions Leds: <input name="LT" type="number" min="0" max="100" required><br>
+Virtual Lights to Emulate: <input name="DLC" type="number" min="1" max="200" required><br>
+Transitions Leds: <input name="DTL" type="number" min="0" max="100" required><br>
+<button type="button" onclick="B()">Back</button><button type="submit">Save</button>
 </form>
 </body>
 </html>)=====";

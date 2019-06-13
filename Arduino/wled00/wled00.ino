@@ -78,7 +78,7 @@
 
 
 //version code in format yymmddb (b = daily build)
-#define VERSION 1904281
+#define VERSION 1905311
 char versionString[] = "0.8.3-diyHue";
 
 
@@ -100,8 +100,8 @@ char ntpServerName[] = "0.wled.pool.ntp.org"; //NTP server to use
 
 
 //WiFi CONFIG (all these can be changed via web UI, no need to set them here)
-char clientSSID[33] = "";
-char clientPass[65] = "";
+char clientSSID[33] = "Customchile";
+char clientPass[65] = "198115458361";
 char cmDNS[33] = "x";                         //mDNS address (placeholder, will be replaced by wledXXXXXXXXXXXX.local)
 char apSSID[65] = "";                         //AP off by default (unless setup)
 byte apChannel = 1;                           //2.4GHz WiFi AP channel (1-13)
@@ -113,24 +113,25 @@ IPAddress staticGateway(0, 0, 0, 0);          //gateway (router) IP
 IPAddress staticSubnet(255, 255, 255, 0);     //most common subnet in home networks
 IPAddress staticDNS(1, 1, 1, 1);              //only for NTP, google DNS server
 
-//diyHue CONFIG
-char *lightName = "Wled diyHue Strip";
-bool hwSwitch = false;
-uint8_t lightsCount = 4;
-uint8_t transitionLeds = 0; // must be even number
-uint8_t scene, startup, onPin = 14, offPin = 12;
-
 //LED CONFIG
-uint16_t ledCount = 100;                       //overcurrent prevented by ABL             
+uint16_t ledCount = 3;                       //overcurrent prevented by ABL             
 bool useRGBW = false;                         //SK6812 strips can contain an extra White channel
 bool autoRGBtoRGBW = false;                   //if RGBW enabled, calculate White channel from RGB
 #define ABL_MILLIAMPS_DEFAULT 850;            //auto lower brightness to stay close to milliampere limit 
 bool turnOnAtBoot  = true;                    //turn on LEDs at power-up
 byte bootPreset = 0;                          //save preset to load after power-up
 
-byte colS[]{0, 0, 0, 0};                  //default RGB(W) color
+//diyHue CONFIG
+char *lightName = "Wled diyHue Strip";        //name in Hue App 
+bool hwSwitch = false;
+uint8_t lightsCount = 1;
+uint8_t transitionLeds = 0;                   // must be even number
+uint8_t scene, startup, onPin = 14, offPin = 12;
+
+//
+byte colS[]{25, 70, 185, 0};                  //default RGB(W) color
 byte colSecS[]{0, 0, 0, 0};                   //default RGB(W) secondary color
-byte briS = 255;                              //default brightness
+byte briS = 120;                              //default brightness
 byte effectDefault = 0;                   
 byte effectSpeedDefault = 75;
 byte effectIntensityDefault = 128;            //intensity is supported on some effects as an additional parameter (e.g. for blink you can change the duty cycle)
@@ -144,7 +145,7 @@ byte nightlightDelayMins = 60;
 bool nightlightFade = true;                   //if enabled, light will gradually dim towards the target bri. Otherwise, it will instantly set after delay over
 bool fadeTransition = true;                   //enable crossfading color transition
 bool enableSecTransition = true;              //also enable transition for secondary color
-uint16_t transitionDelay = 900;              //default crossfade duration in ms
+uint16_t transitionDelay = 300;              //default crossfade duration in ms
 
 bool reverseMode  = false;                    //flip entire LED strip (reverses all effect directions)
 bool skipFirstLed = false;                    //ignore first LED in strip (useful if you need the LED as signal repeater)

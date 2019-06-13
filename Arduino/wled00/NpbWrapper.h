@@ -115,19 +115,19 @@ public:
     }
   }
 
-  void SetPixelColor(uint16_t indexPixel, RgbColor color)
+  void SetPixelColor(uint16_t pixel, RgbColor color)
   {
     switch (_type) {
-      case NeoPixelType_Grb: _pGrb->SetPixelColor(indexPixel, color);   break;
-      case NeoPixelType_Grbw:_pGrbw->SetPixelColor(indexPixel, color);  break;
+      case NeoPixelType_Grb: _pGrb->SetPixelColor(pixel, color);   break;
+      case NeoPixelType_Grbw:_pGrbw->SetPixelColor(pixel, color);  break;
     }
   }
 
-  void SetPixelColor(uint16_t indexPixel, RgbwColor color)
+  void SetPixelColor(uint16_t pixel, RgbwColor color)
   {
     switch (_type) {
-      case NeoPixelType_Grb:  _pGrb->SetPixelColor(indexPixel, RgbColor(color.R,color.G,color.B));   break;
-      case NeoPixelType_Grbw: _pGrbw->SetPixelColor(indexPixel, color);   break;
+      case NeoPixelType_Grb:  _pGrb->SetPixelColor(pixel, RgbColor(color.R,color.G,color.B));   break;
+      case NeoPixelType_Grbw: _pGrbw->SetPixelColor(pixel, color);   break;
     }
   }
 
@@ -139,10 +139,10 @@ public:
     }
   }
 
-  RgbColor GetPixelColor(uint16_t indexPixel) const
+  RgbColor GetPixelColor(uint16_t pixel) const
   {
     switch (_type) {
-      case NeoPixelType_Grb:  return _pGrb->GetPixelColor(indexPixel);     break;
+      case NeoPixelType_Grb:  return _pGrb->GetPixelColor(pixel);     break;
       case NeoPixelType_Grbw: /*doesn't support it so we don't return it*/ break;
     }
     return 0;
@@ -150,11 +150,11 @@ public:
 
   // NOTE:  Due to feature differences, some support RGBW but the method name
   // here needs to be unique, thus GetPixeColorRgbw
-  RgbwColor GetPixelColorRgbw(uint16_t indexPixel) const
+  RgbwColor GetPixelColorRgbw(uint16_t pixel) const
   {
     switch (_type) {
-      case NeoPixelType_Grb:  return _pGrb->GetPixelColor(indexPixel);  break;
-      case NeoPixelType_Grbw: return _pGrbw->GetPixelColor(indexPixel); break;
+      case NeoPixelType_Grb:  return _pGrb->GetPixelColor(pixel);  break;
+      case NeoPixelType_Grbw: return _pGrbw->GetPixelColor(pixel); break;
     }
     return 0;
   }

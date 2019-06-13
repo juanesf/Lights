@@ -9,7 +9,7 @@
 #include <ArduinoJson.h>
 
 struct state {
-  uint8_t colors[3], bri = 100, sat = 254, colorMode = 2;
+  uint8_t colors[3], bri = briS, sat = 254, colorMode = 2;
   bool lightState;
   int ct = 200, hue;
   float stepLevel[3], currentColors[3], x, y;
@@ -31,138 +31,7 @@ RgbColor green = RgbColor(0, 255, 0);
 RgbColor white = RgbColor(255);
 RgbColor black = RgbColor(0);
 
-NeoPixelBrightnessBus<PIXELFEATURE3,PIXELMETHOD>* _pGrb = NULL;
-
-void convertHue(uint8_t light)
-{
-  double      hh, p, q, t, ff, s, v;
-  long        i;
-
-  s = lights[light].sat / 255.0;
-  v = lights[light].bri / 255.0;
-
-  if (s <= 0.0) {      // < is bogus, just shuts up warnings
-    lights[light].colors[0] = v;
-    lights[light].colors[1] = v;
-    lights[light].colors[2] = v;
-    return;
-  }
-  hh = lights[light].hue;
-  if (hh >= 65535.0) hh = 0.0;
-  hh /= 11850, 0;
-  i = (long)hh;
-  ff = hh - i;
-  p = v * (1.0 - s);
-  q = v * (1.0 - (s * ff));
-  t = v * (1.0 - (s * (1.0 - ff)));
-
-  switch (i) {
-    case 0:
-      lights[light].colors[0] = v * 255.0;
-      lights[light].colors[1] = t * 255.0;
-      lights[light].colors[2] = p * 255.0;
-      break;
-    case 1:
-      lights[light].colors[0] = q * 255.0;
-      lights[light].colors[1] = v * 255.0;
-      lights[light].colors[2] = p * 255.0;
-      break;
-    case 2:
-      lights[light].colors[0] = p * 255.0;
-      lights[light].colors[1] = v * 255.0;
-      lights[light].colors[2] = t * 255.0;
-      break;
-
-    case 3:
-      lights[light].colors[0] = p * 255.0;
-      lights[light].colors[1] = q * 255.0;
-      lights[light].colors[2] = v * 255.0;
-      break;
-    case 4:
-      lights[light].colors[0] = t * 255.0;
-      lights[light].colors[1] = p * 255.0;
-      lights[light].colors[2] = v * 255.0;
-      break;
-    case 5:
-    default:
-      lights[light].colors[0] = v * 255.0;
-      lights[light].colors[1] = p * 255.0;
-      lights[light].colors[2] = q * 255.0;
-      break;
-  }
-
-}
-
-void convertXy(uint8_t light)
-{
-  int optimal_bri = lights[light].bri;
-  if (optimal_bri < 5) {
-    optimal_bri = 5;
-  }
-  float Y = lights[light].y;
-  float X = lights[light].x;
-  float Z = 1.0f - lights[light].x - lights[light].y;
-
-  // sRGB D65 conversion
-  float r =  X * 3.2406f - Y * 1.5372f - Z * 0.4986f;
-  float g = -X * 0.9689f + Y * 1.8758f + Z * 0.0415f;
-  float b =  X * 0.0557f - Y * 0.2040f + Z * 1.0570f;
-
-
-  // Apply gamma correction
-  r = r <= 0.04045f ? r / 12.92f : pow((r + 0.055f) / (1.0f + 0.055f), 2.4f);
-  g = g <= 0.04045f ? g / 12.92f : pow((g + 0.055f) / (1.0f + 0.055f), 2.4f);
-  b = b <= 0.04045f ? b / 12.92f : pow((b + 0.055f) / (1.0f + 0.055f), 2.4f);
-
-  if (r > b && r > g) {
-    // red is biggest
-    if (r > 1.0f) {
-      g = g / r;
-      b = b / r;
-      r = 1.0f;
-    }
-  }
-  else if (g > b && g > r) {
-    // green is biggest
-    if (g > 1.0f) {
-      r = r / g;
-      b = b / g;
-      g = 1.0f;
-    }
-  }
-  else if (b > r && b > g) {
-    // blue is biggest
-    if (b > 1.0f) {
-      r = r / b;
-      g = g / b;
-      b = 1.0f;
-    }
-  }
-
-  r = r < 0 ? 0 : r;
-  g = g < 0 ? 0 : g;
-  b = b < 0 ? 0 : b;
-
-  lights[light].colors[0] = (int) (r * optimal_bri); lights[light].colors[1] = (int) (g * optimal_bri); lights[light].colors[2] = (int) (b * optimal_bri);
-}
-
-void convertCt(uint8_t light) {
-  int hectemp = 10000 / lights[light].ct;
-  int r, g, b;
-  if (hectemp <= 66) {
-    r = 255;
-    g = 99.4708025861 * log(hectemp) - 161.1195681661;
-    b = hectemp <= 19 ? 0 : (138.5177312231 * log(hectemp - 10) - 305.0447927307);
-  } else {
-    r = 329.698727446 * pow(hectemp - 60, -0.1332047592);
-    g = 288.1221695283 * pow(hectemp - 60, -0.0755148492);
-    b = 255;
-  }
-  r = r > 255 ? 255 : r;
-  g = g > 255 ? 255 : g;
-  b = b > 255 ? 255 : b;
-  lights[light].colors[0] = r * (lights[light].bri / 255.0f); lights[light].colors[1] = g * (lights[light].bri / 255.0f); lights[light].colors[2] = b * (lights[light].bri / 255.0f);
-}
+NeoPixelBrightnessBus<PIXELFEATURE3,PIXELMETHOD>* bus = NULL;
 
 void apply_scene(uint8_t new_scene) {
   for (uint8_t light = 0; light < lightsCount; light++) {
@@ -210,23 +79,6 @@ void processLightdata(uint8_t light, float transitiontime) {
   }
 }
 
-RgbColor blending(float left[3], float right[3], uint8_t pixel) {
-  uint8_t result[3];
-  for (uint8_t i = 0; i < 3; i++) {
-    float percent = (float) pixel / (float) (transitionLeds + 1);
-    result[i] = (left[i] * (1.0f - percent) + right[i] * percent) / 2;
-  }
-  return RgbColor((uint8_t)result[0], (uint8_t)result[1], (uint8_t)result[2]);
-}
-
-RgbColor convInt(float color[3]) {
-  return RgbColor((uint8_t)color[0], (uint8_t)color[1], (uint8_t)color[2]);
-}
-
-RgbColor convFloat(float color[3]) {
-  return RgbColor((uint8_t)color[0], (uint8_t)color[1], (uint8_t)color[2]);
-}
-
 void lightEngine() {
   for (int light = 0; light < lightsCount; light++) {
     if (lights[light].lightState) {
@@ -240,35 +92,35 @@ void lightEngine() {
           if (light == 0) {
             for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2; pixel++) {
               if (pixel < lightLedsCount - transitionLeds / 2) {
-                _pGrb->SetPixelColor(pixel, convFloat(lights[light].currentColors));
+                bus->SetPixelColor(pixel, convFloat(lights[light].currentColors));
               } else {
-                _pGrb->SetPixelColor(pixel, blending(lights[0].currentColors, lights[1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
+                bus->SetPixelColor(pixel, blending(lights[0].currentColors, lights[1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
               }
             }
           } else if (light == lightsCount - 1) {
             for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2 ; pixel++) {
               if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
               } else {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           } else {
             for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds; pixel++) {
               if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
               } else if (pixel > lightLedsCount - 1) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - lightLedsCount));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - lightLedsCount));
               } else  {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           }
         } else {
-          _pGrb->ClearTo(convFloat(lights[light].currentColors), 0, pixelCount - 1);
+          bus->ClearTo(convFloat(lights[light].currentColors), 0, pixelCount - 1);
         }
-        _pGrb->Show();
-		    colorUpdated(5);
+        bus->Show();
+		colorUpdated(1);
       }
     } else {
       if (lights[light].currentColors[0] != 0 || lights[light].currentColors[1] != 0 || lights[light].currentColors[2] != 0) {
@@ -281,35 +133,35 @@ void lightEngine() {
           if (light == 0) {
             for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2; pixel++) {
               if (pixel < lightLedsCount - transitionLeds / 2) {
-                _pGrb->SetPixelColor(pixel, convFloat(lights[light].currentColors));
+                bus->SetPixelColor(pixel, convFloat(lights[light].currentColors));
               } else {
-                _pGrb->SetPixelColor(pixel,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
+                bus->SetPixelColor(pixel,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
               }
             }
           } else if (light == lightsCount - 1) {
             for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2 ; pixel++) {
               if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
               } else {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           } else {
             for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds; pixel++) {
               if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
               } else if (pixel > lightLedsCount - 1) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - lightLedsCount));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - lightLedsCount));
               } else  {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                bus->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           }
         } else {
-          _pGrb->ClearTo(convFloat(lights[light].currentColors), 0, pixelCount - 1);
+          bus->ClearTo(convFloat(lights[light].currentColors), 0, pixelCount - 1);
         }
-        _pGrb->Show();
-		    colorUpdated(5);
+        bus->Show();
+		colorUpdated(1);
       }
     }
   }
@@ -495,11 +347,11 @@ bool loadConfig() {
 
 void ChangeNeoPixels(uint16_t newCount)
 {
-  if (_pGrb != NULL) {
-    delete _pGrb; // delete the previous dynamically created strip
+  if (bus != NULL) {
+    delete bus; // delete the previous dynamically created strip
   }
-  _pGrb = new NeoPixelBrightnessBus<PIXELFEATURE3,PIXELMETHOD>(newCount); // and recreate with new count
-  _pGrb->Begin();
+  bus = new NeoPixelBrightnessBus<PIXELFEATURE3,PIXELMETHOD>(newCount); // and recreate with new count
+  bus->Begin();
 }
 
 void userBeginPreConnection()
@@ -611,6 +463,10 @@ void userBegin()
           lights[light].bri = values["bri"];
         }
 
+        if (values.containsKey("briS")) {
+          lights[light].bri = values["briS"];
+        }
+
         if (values.containsKey("bri_inc")) {
           lights[light].bri += (int) values["bri_inc"];
           if (lights[light].bri > 255) lights[light].bri = 255;
@@ -642,11 +498,16 @@ void userBegin()
   server.on("/state", HTTP_GET, []() {
     uint8_t light = server.arg("light").toInt() - 1;
     DynamicJsonDocument root(1024);
-    root["on"] = lights[light].lightState;
+    root["on"] = lights[light].lightState || (bri > 0);
     root["bri"] = lights[light].bri;
     JsonArray xy = root.createNestedArray("xy");
     xy.add(lights[light].x);
     xy.add(lights[light].y);
+	  JsonArray colS = root.createNestedArray("colS");
+    colS.add(colS[0]);
+    colS.add(colS[1]);
+    colS.add(colS[2]);
+	  root["briS"] = bri;
     root["ct"] = lights[light].ct;
     root["hue"] = lights[light].hue;
     root["sat"] = lights[light].sat;
@@ -692,23 +553,13 @@ void userBegin()
     root["dhcp"] = (int)useDhcp;
     root["addr"] = (String)staticIP[0] + "." + (String)staticIP[1] + "." + (String)staticIP[2] + "." + (String)staticIP[3];
     root["gw"] = (String)staticGateway[0] + "." + (String)staticGateway[1] + "." + (String)staticGateway[2] + "." + (String)staticGateway[3];
-    root["sm"] = (String)staticSubnet[0] + "." + (String)staticSubnet[1] + "." + (String)staticSubnet[2] + "." + (String)staticSubnet[3];
+    root["sn"] = (String)staticSubnet[0] + "." + (String)staticSubnet[1] + "." + (String)staticSubnet[2] + "." + (String)staticSubnet[3];
     String output;
     serializeJson(root, output);
     server.send(200, "text/plain", output);
   });
 
   server.begin();
-}
-
-
-RgbColor blendingEntert(float left[3], float right[3], float pixel) {
-  uint8_t result[3];
-  for (uint8_t i = 0; i < 3; i++) {
-    float percent = (float) pixel / (float) (transitionLeds + 1);
-    result[i] = (left[i] * (1.0f - percent) + right[i] * percent) / 2;
-  }
-  return RgbColor((uint8_t)result[0], (uint8_t)result[1], (uint8_t)result[2]);
 }
 
 void entertainment() {
@@ -725,34 +576,36 @@ void entertainment() {
       lights[packetBuffer[i * 4]].currentColors[2] = packetBuffer[i * 4 + 3];
     }
     for (uint8_t light = 0; light < lightsCount; light++) {
-      if (lightsCount >= 1) {
+      if (lightsCount > 1) {
         if (light == 0) {
           for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2; pixel++) {
             if (pixel < lightLedsCount - transitionLeds / 2) {
-              _pGrb->SetPixelColor(pixel, convInt(lights[light].currentColors));
+              bus->SetPixelColor(pixel, convInt(lights[light].currentColors));
             } else {
-              _pGrb->SetPixelColor(pixel, blendingEntert(lights[0].currentColors, lights[1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
+              bus->SetPixelColor(pixel, blendingEntert(lights[0].currentColors, lights[1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
             }
           }
         } else if (light == lightsCount - 1) {
           for (uint8_t pixel = 0; pixel < lightLedsCount - transitionLeds / 2 ; pixel++) {
-            _pGrb->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
+            bus->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
           }
         } else {
           for (uint8_t pixel = 0; pixel < lightLedsCount; pixel++) {
             if (pixel < lightLedsCount - transitionLeds) {
-              _pGrb->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
+              bus->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
             } else {
-              _pGrb->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, blendingEntert(lights[light].currentColors, lights[light + 1].currentColors, pixel - (lightLedsCount - transitionLeds ) + 1));
+              bus->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, blendingEntert(lights[light].currentColors, lights[light + 1].currentColors, pixel - (lightLedsCount - transitionLeds ) + 1));
             }
           }
         }
       } else {
-        _pGrb->ClearTo(RgbColor(lights[0].colors[0], lights[0].colors[1], lights[0].colors[2]), 0, lightLedsCount - 1);
-      }
+        for (uint8_t pixel = 0; pixel < lightLedsCount; pixel++) {
+          bus->SetPixelColor(pixel, convInt(lights[light].currentColors));
+		  }
+		}
     }
-    _pGrb->Show();
-	  colorUpdated(5);
+    bus->Show();
+	colorUpdated(1);
   }
 }
 

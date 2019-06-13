@@ -81,8 +81,8 @@ bool colorChanged()
 
 void colorUpdated(int callMode)
 {
-  //call for notifier -> 0: init 1: direct change 2: button 3: notification 4: nightlight 5: other (No notification)
-  //                     6: fx changed 7: hue 8: preset cycle 9: blynk 10: alexa
+  //call for notifier -> 0:init 1:direct change 2:button 3:notification 4:nightlight 5:other (No notification)
+  //                     6:fx changed 7:hue 8:preset cycle 9:blynk 10:alexa
   bool fxChanged = strip.setEffectConfig(effectCurrent, effectSpeed, effectIntensity, effectPalette);
   if (!colorChanged())
   {

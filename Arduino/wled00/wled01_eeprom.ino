@@ -292,7 +292,7 @@ void loadSettingsFromEEPROM(bool first)
   if (apChannel > 13 || apChannel < 1) apChannel = 1;
   apHide = EEPROM.read(228);
   if (apHide > 1) apHide = 1;
-  ledCount = EEPROM.read(229) + ((EEPROM.read(398) << 8) & 0xFF00); if (ledCount > 1200 || ledCount == 0) ledCount = 100;
+  ledCount = EEPROM.read(229) + ((EEPROM.read(398) << 8) & 0xFF00); if (ledCount > 1200 || ledCount == 0) ledCount = 3;
   
   notifyButton = EEPROM.read(230);
   notifyTwice = EEPROM.read(231);
@@ -424,7 +424,7 @@ void loadSettingsFromEEPROM(bool first)
     macroLongPress = EEPROM.read(2179);
     macroCountdown = EEPROM.read(2180);
     macroNl = EEPROM.read(2181);
-	  lightsCount = EEPROM.read(2197);
+	lightsCount = EEPROM.read(2197);
     transitionLeds = EEPROM.read(2198);
   }
 
