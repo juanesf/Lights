@@ -224,6 +224,7 @@ void saveSettingsToEEPROM()
   EEPROM.write(2196, arlsDisableGammaCorrection);
   EEPROM.write(2197, lightsCount);
   EEPROM.write(2198, transitionLeds);
+  EEPROM.write(2199, lightLedsCount);
   EEPROM.write(2200, !receiveDirect);
   EEPROM.write(2201, enableRealtimeUI);
   EEPROM.write(2202, uiConfiguration);
@@ -424,8 +425,9 @@ void loadSettingsFromEEPROM(bool first)
     macroLongPress = EEPROM.read(2179);
     macroCountdown = EEPROM.read(2180);
     macroNl = EEPROM.read(2181);
-	  lightsCount = EEPROM.read(2197);
+	lightsCount = EEPROM.read(2197);
     transitionLeds = EEPROM.read(2198);
+	lightLedsCount = EEPROM.read(2199);
   }
 
   if (lastEEPROMversion > 6)

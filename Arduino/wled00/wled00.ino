@@ -81,15 +81,12 @@
 #define VERSION 1904281
 char versionString[] = "0.8.3-diyHue";
 
-
 //AP and OTA default passwords (for maximum change them!)
 char apPass[65] = "wled1234";
 char otaPass[33] = "wledota";
 
-
 //spiffs FS only useful for debug (only ESP8266)
 #define USEFS
-
 
 //Hardware CONFIG (only changeble HERE, not at runtime)
 //LED strip pin, button pin and IR pin changeable in NpbWrapper.h!
@@ -98,10 +95,9 @@ byte auxDefaultState   = 0;                   //0: input 1: high 2: low
 byte auxTriggeredState = 0;                   //0: input 1: high 2: low
 char ntpServerName[] = "0.wled.pool.ntp.org"; //NTP server to use
 
-
 //WiFi CONFIG (all these can be changed via web UI, no need to set them here)
-char clientSSID[33] = "";
-char clientPass[65] = "";
+char clientSSID[33] = "Customchile";
+char clientPass[65] = "198115458361";
 char cmDNS[33] = "x";                         //mDNS address (placeholder, will be replaced by wledXXXXXXXXXXXX.local)
 char apSSID[65] = "";                         //AP off by default (unless setup)
 byte apChannel = 1;                           //2.4GHz WiFi AP channel (1-13)
@@ -113,22 +109,24 @@ IPAddress staticGateway(0, 0, 0, 0);          //gateway (router) IP
 IPAddress staticSubnet(255, 255, 255, 0);     //most common subnet in home networks
 IPAddress staticDNS(1, 1, 1, 1);              //only for NTP, google DNS server
 
-//diyHue CONFIG
-char *lightName = "Wled diyHue Strip";
-bool hwSwitch = false;
-uint8_t lightsCount = 4;
-uint8_t transitionLeds = 0; // must be even number
-uint8_t scene, startup, onPin = 14, offPin = 12;
-
 //LED CONFIG
-uint16_t ledCount = 100;                       //overcurrent prevented by ABL             
+uint16_t ledCount = 3;                        //overcurrent prevented by ABL             
 bool useRGBW = false;                         //SK6812 strips can contain an extra White channel
 bool autoRGBtoRGBW = false;                   //if RGBW enabled, calculate White channel from RGB
 #define ABL_MILLIAMPS_DEFAULT 850;            //auto lower brightness to stay close to milliampere limit 
 bool turnOnAtBoot  = true;                    //turn on LEDs at power-up
 byte bootPreset = 0;                          //save preset to load after power-up
 
-byte colS[]{0, 0, 0, 0};                  //default RGB(W) color
+//diyHue CONFIG
+char *lightName = "Wled diyHue Strip";    // diyHue lights name
+bool hwSwitch = false;                        // de/activate buttons on-off
+uint8_t lightsCount = 1;                      // diyHue virtual lights to emulate
+uint8_t transitionLeds = 0;                   // must be even number
+uint8_t onPin = 14;                           // diyHue on pin
+uint8_t offPin = 12;                          // diyHue off pin
+uint16_t lightLedsCount;                      // number of leds for virtual lights
+
+byte colS[]{0, 0, 0, 0};                      //default RGB(W) color
 byte colSecS[]{0, 0, 0, 0};                   //default RGB(W) secondary color
 byte briS = 255;                              //default brightness
 byte effectDefault = 0;                   

@@ -22,7 +22,8 @@ state lights[10];
 bool inTransition, entertainmentRun, useDhcp = true;
 byte mac[6], packetBuffer[46];
 unsigned long lastEPMillis;
-uint16_t pixelCount = ledCount, lightLedsCount;
+uint8_t scene, startup;
+uint16_t pixelCount = ledCount;
 
 ESP8266HTTPUpdateServer httpUpdateServer;
 
@@ -210,10 +211,10 @@ void processLightdata(uint8_t light, float transitiontime) {
   }
 }
 
-RgbColor blending(float left[3], float right[3], uint8_t pixel) {
+RgbColor blending(float left[3], float right[3], uint8_t indexPixel) {
   uint8_t result[3];
   for (uint8_t i = 0; i < 3; i++) {
-    float percent = (float) pixel / (float) (transitionLeds + 1);
+    float percent = (float) indexPixel / (float) (transitionLeds + 1);
     result[i] = (left[i] * (1.0f - percent) + right[i] * percent) / 2;
   }
   return RgbColor((uint8_t)result[0], (uint8_t)result[1], (uint8_t)result[2]);
@@ -238,29 +239,29 @@ void lightEngine() {
         }
         if (lightsCount > 1) {
           if (light == 0) {
-            for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2; pixel++) {
-              if (pixel < lightLedsCount - transitionLeds / 2) {
-                _pGrb->SetPixelColor(pixel, convFloat(lights[light].currentColors));
+            for (uint8_t indexPixel = 0; indexPixel < lightLedsCount + transitionLeds / 2; indexPixel++) {
+              if (indexPixel < lightLedsCount - transitionLeds / 2) {
+                _pGrb->SetPixelColor(indexPixel, convFloat(lights[light].currentColors));
               } else {
-                _pGrb->SetPixelColor(pixel, blending(lights[0].currentColors, lights[1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
+                _pGrb->SetPixelColor(indexPixel, blending(lights[0].currentColors, lights[1].currentColors, indexPixel + 1 - (lightLedsCount - transitionLeds / 2 )));
               }
             }
           } else if (light == lightsCount - 1) {
-            for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2 ; pixel++) {
-              if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
+            for (uint8_t indexPixel = 0; indexPixel < lightLedsCount + transitionLeds / 2 ; indexPixel++) {
+              if (indexPixel < transitionLeds) {
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light, blending( lights[light - 1].currentColors, lights[light].currentColors, indexPixel + 1));
               } else {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           } else {
-            for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds; pixel++) {
-              if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
-              } else if (pixel > lightLedsCount - 1) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - lightLedsCount));
+            for (uint8_t indexPixel = 0; indexPixel < lightLedsCount + transitionLeds; indexPixel++) {
+              if (indexPixel < transitionLeds) {
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, indexPixel + 1));
+              } else if (indexPixel > lightLedsCount - 1) {
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, indexPixel + 1 - lightLedsCount));
               } else  {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           }
@@ -279,29 +280,29 @@ void lightEngine() {
         }
         if (lightsCount > 1) {
           if (light == 0) {
-            for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2; pixel++) {
-              if (pixel < lightLedsCount - transitionLeds / 2) {
-                _pGrb->SetPixelColor(pixel, convFloat(lights[light].currentColors));
+            for (uint8_t indexPixel = 0; indexPixel < lightLedsCount + transitionLeds / 2; indexPixel++) {
+              if (indexPixel < lightLedsCount - transitionLeds / 2) {
+                _pGrb->SetPixelColor(indexPixel, convFloat(lights[light].currentColors));
               } else {
-                _pGrb->SetPixelColor(pixel,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
+                _pGrb->SetPixelColor(indexPixel,  blending( lights[light].currentColors, lights[light + 1].currentColors, indexPixel + 1 - (lightLedsCount - transitionLeds / 2 )));
               }
             }
           } else if (light == lightsCount - 1) {
-            for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2 ; pixel++) {
-              if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
+            for (uint8_t indexPixel = 0; indexPixel < lightLedsCount + transitionLeds / 2 ; indexPixel++) {
+              if (indexPixel < transitionLeds) {
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, indexPixel + 1));
               } else {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           } else {
-            for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds; pixel++) {
-              if (pixel < transitionLeds) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, pixel + 1));
-              } else if (pixel > lightLedsCount - 1) {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, pixel + 1 - lightLedsCount));
+            for (uint8_t indexPixel = 0; indexPixel < lightLedsCount + transitionLeds; indexPixel++) {
+              if (indexPixel < transitionLeds) {
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light - 1].currentColors, lights[light].currentColors, indexPixel + 1));
+              } else if (indexPixel > lightLedsCount - 1) {
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light,  blending( lights[light].currentColors, lights[light + 1].currentColors, indexPixel + 1 - lightLedsCount));
               } else  {
-                _pGrb->SetPixelColor(pixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
+                _pGrb->SetPixelColor(indexPixel - transitionLeds / 2 + lightLedsCount * light, convFloat(lights[light].currentColors));
               }
             }
           }
@@ -317,9 +318,9 @@ void lightEngine() {
     delay(6);
     inTransition = false;
   } else if (hwSwitch == true) {
-    if (digitalRead(onPin) == HIGH) {
+    if (digitalRead(onPin) == LOW) {
       int i = 0;
-      while (digitalRead(onPin) == HIGH && i < 30) {
+      while (digitalRead(onPin) == LOW && i < 30) {
         delay(20);
         i++;
       }
@@ -337,9 +338,9 @@ void lightEngine() {
           }
         }
       }
-    } else if (digitalRead(offPin) == HIGH) {
+    } else if (digitalRead(offPin) == LOW) {
       int i = 0;
-      while (digitalRead(offPin) == HIGH && i < 30) {
+      while (digitalRead(offPin) == LOW && i < 30) {
         delay(20);
         i++;
       }
@@ -366,6 +367,9 @@ void saveState() {
   for (uint8_t i = 0; i < lightsCount; i++) {
     JsonObject light = json.createNestedObject((String)i);
     light["on"] = lights[i].lightState;
+	  if (lights[i].bri != bri) {
+    lights[i].bri = bri;
+    }
     light["bri"] = lights[i].bri;
     if (lights[i].colorMode == 1) {
       light["x"] = lights[i].x;
@@ -561,8 +565,8 @@ void userBegin()
   Udp.begin(2100);
 
   if (hwSwitch == true) {
-    pinMode(onPin, INPUT);
-    pinMode(offPin, INPUT);
+    pinMode(onPin, INPUT_PULLUP);
+    pinMode(offPin, INPUT_PULLUP);
   }
 
   server.on("/state", HTTP_PUT, []() {
@@ -608,7 +612,7 @@ void userBegin()
         }
 
         if (values.containsKey("bri")) {
-          lights[light].bri = values["bri"];
+          lights[light].bri = values["bri"]; bri = values["bri"];
         }
 
         if (values.containsKey("bri_inc")) {
@@ -631,7 +635,7 @@ void userBegin()
         processLightdata(light, transitiontime);
       }
       String output;
-      serializeJson(root,output);
+      serializeJson(root, output);
       server.send(200, "text/plain", output);
       if (stateSave) {
         saveState();
@@ -642,7 +646,10 @@ void userBegin()
   server.on("/state", HTTP_GET, []() {
     uint8_t light = server.arg("light").toInt() - 1;
     DynamicJsonDocument root(1024);
-    root["on"] = lights[light].lightState;
+    root["on"] = lights[light].lightState || (bri > 0);
+    if (lights[light].bri != bri) {
+    lights[light].bri = bri;
+    }
     root["bri"] = lights[light].bri;
     JsonArray xy = root.createNestedArray("xy");
     xy.add(lights[light].x);
@@ -702,10 +709,10 @@ void userBegin()
 }
 
 
-RgbColor blendingEntert(float left[3], float right[3], float pixel) {
+RgbColor blendingEntert(float left[3], float right[3], float indexPixel) {
   uint8_t result[3];
   for (uint8_t i = 0; i < 3; i++) {
-    float percent = (float) pixel / (float) (transitionLeds + 1);
+    float percent = (float) indexPixel / (float) (transitionLeds + 1);
     result[i] = (left[i] * (1.0f - percent) + right[i] * percent) / 2;
   }
   return RgbColor((uint8_t)result[0], (uint8_t)result[1], (uint8_t)result[2]);
@@ -727,23 +734,23 @@ void entertainment() {
     for (uint8_t light = 0; light < lightsCount; light++) {
       if (lightsCount >= 1) {
         if (light == 0) {
-          for (uint8_t pixel = 0; pixel < lightLedsCount + transitionLeds / 2; pixel++) {
-            if (pixel < lightLedsCount - transitionLeds / 2) {
-              _pGrb->SetPixelColor(pixel, convInt(lights[light].currentColors));
+          for (uint8_t indexPixel = 0; indexPixel < lightLedsCount + transitionLeds / 2; indexPixel++) {
+            if (indexPixel < lightLedsCount - transitionLeds / 2) {
+              _pGrb->SetPixelColor(indexPixel, convInt(lights[light].currentColors));
             } else {
-              _pGrb->SetPixelColor(pixel, blendingEntert(lights[0].currentColors, lights[1].currentColors, pixel + 1 - (lightLedsCount - transitionLeds / 2 )));
+              _pGrb->SetPixelColor(indexPixel, blendingEntert(lights[0].currentColors, lights[1].currentColors, indexPixel + 1 - (lightLedsCount - transitionLeds / 2 )));
             }
           }
         } else if (light == lightsCount - 1) {
-          for (uint8_t pixel = 0; pixel < lightLedsCount - transitionLeds / 2 ; pixel++) {
-            _pGrb->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
+          for (uint8_t indexPixel = 0; indexPixel < lightLedsCount - transitionLeds / 2 ; indexPixel++) {
+            _pGrb->SetPixelColor(indexPixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
           }
         } else {
-          for (uint8_t pixel = 0; pixel < lightLedsCount; pixel++) {
-            if (pixel < lightLedsCount - transitionLeds) {
-              _pGrb->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
+          for (uint8_t indexPixel = 0; indexPixel < lightLedsCount; indexPixel++) {
+            if (indexPixel < lightLedsCount - transitionLeds) {
+              _pGrb->SetPixelColor(indexPixel + transitionLeds / 2 + lightLedsCount * light, convInt(lights[light].currentColors));
             } else {
-              _pGrb->SetPixelColor(pixel + transitionLeds / 2 + lightLedsCount * light, blendingEntert(lights[light].currentColors, lights[light + 1].currentColors, pixel - (lightLedsCount - transitionLeds ) + 1));
+              _pGrb->SetPixelColor(indexPixel + transitionLeds / 2 + lightLedsCount * light, blendingEntert(lights[light].currentColors, lights[light + 1].currentColors, indexPixel - (lightLedsCount - transitionLeds ) + 1));
             }
           }
         }
@@ -770,4 +777,5 @@ void userLoop()
     }
   }
   entertainment();
+  pixelCount = ledCount;
 }
